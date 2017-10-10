@@ -1,0 +1,42 @@
+# id: BluePic
+# event_id: web
+# event_organizer: dev-journeys
+
+# runtimes:
+#       - Kubernetes Cluster
+#       - OpenWhisk
+#       - Cloud Foundry
+#       - Mainframe
+#       - Swift on the Server
+#       - Hyperledger Composer
+#       - Hyperledger Fabric v1.0
+
+# services:
+#       - IoT Platform
+#       - Investment Portfolio
+#       - NodeRed (Serverless)
+#       - Speech to Text
+#       - Watson IoT Platform
+#       - Object Storage
+#       - Apache Spark
+#       - Cloudant NoSQL DB
+#       - Tone Analyzer
+#       - Natural Language Understanding
+#       - Visual Recognition
+#       - Conversation
+#       - Discovery
+#       - Text-to-Speech
+#       - Speech-to-Text
+#       - API Connect
+#       - Secure Gateway
+#       - Watson Analytics
+#       - Insights for Weather
+#       - Internet of Things Platform
+#       - Compose for MySQL
+#       - Compose for PostgreSQL
+#       - App ID
+#       - IBM Push
+#       - Streaming Analytics for Bluemix
+#       - Investment Portfolio
+#       - Predictive Market Scenarios
+#       - Simulated Instrument Analytics

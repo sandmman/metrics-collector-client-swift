@@ -18,34 +18,38 @@ import Foundation
 import Configuration
 import CloudFoundryEnv
 import LoggerAPI
+import Yaml
+import KituraRequest
 
-public struct CloudFoundryDeploymentTracker {
+public struct MetricsTrackerClient {
   let configMgr: ConfigurationManager
-  let repositoryURL: String
+  let repository: String
+  var organization: String?
   var codeVersion: String?
 
-  public init(configMgr: ConfigurationManager, repositoryURL: String, codeVersion: String? = nil) {
-    self.repositoryURL = repositoryURL
+  public init(configMgr: ConfigurationManager, repository: String, organization: String? = "IBM", codeVersion: String? = nil) {
+    self.repository = repository
     self.codeVersion = codeVersion
     self.configMgr = configMgr
+    self.organization = organization
   }
 
-  public init(repositoryURL: String, codeVersion: String? = nil) {
+  public init(repository: String, organization: String? = "IBM", codeVersion: String? = nil) {
     let configMgr = ConfigurationManager()
     configMgr.load(.environmentVariables)
-    self.init(configMgr: configMgr, repositoryURL: repositoryURL, codeVersion: codeVersion)
+    self.init(configMgr: configMgr, repository: repository, organization: organization, codeVersion: codeVersion)
   }
 
   /// Sends off HTTP post request to tracking service, simply logging errors on failure
   public func track() {
-    Log.verbose("About to construct HTTP request for cf-deployment-tracker-service...")
+    Log.verbose("About to construct HTTP request for metrics-tracker-service...")
     if let trackerJson = buildTrackerJson(configMgr: configMgr),
     let jsonData = try? JSONSerialization.data(withJSONObject: trackerJson) {
       let jsonStr = String(data: jsonData, encoding: .utf8)
-      Log.verbose("JSON payload for cf-deployment-tracker-service is: \(String(describing: jsonStr))")
+      Log.info("JSON payload for metrics-tracker-service is: \(String(describing: jsonStr))")
       // Build URL instance
-      guard let url = URL(string: "https://deployment-tracker.mybluemix.net:443/api/v1/track") else {
-        Log.verbose("Failed to create URL object to connect to cf-deployment-tracker-service...")
+      guard let url = URL(string: "https://metrics-tracker.mybluemix.net:443/api/v1/track") else {
+        Log.info("Failed to create URL object to connect to metrics-tracker-service...")
         return
       }
       var request = URLRequest(url: url)
@@ -58,7 +62,7 @@ public struct CloudFoundryDeploymentTracker {
         data, response, error in
 
         guard let httpResponse = response as? HTTPURLResponse else {
-          Log.error("Failed to send tracking data to cf-deployment-tracker-service: \(String(describing: error))")
+          Log.error("Failed to send tracking data to metrics-tracker-service: \(String(describing: error))")
           return
         }
 
@@ -66,17 +70,18 @@ public struct CloudFoundryDeploymentTracker {
         // OK = 200, CREATED = 201
         if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
           if let data = data, let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) {
-            Log.info("cf-deployment-tracker-service response: \(jsonResponse)")
+             Log.info("metrics-tracker-service response: \(jsonResponse)")
+
           } else {
-            Log.error("Bad JSON payload received from cf-deployment-tracker-service.")
+            Log.error("Bad JSON payload received from metrics-tracker-service.")
           }
         } else {
-          Log.error("Failed to send tracking data to cf-deployment-tracker-service.")
+          Log.error("Failed to send tracking data to metrics-tracker-service.")
         }
       }
-      Log.verbose("Successfully built HTTP request options for cf-deployment-tracker-service.")
+      Log.verbose("Successfully built HTTP request options for metrics-tracker-service.")
       requestTask.resume()
-      Log.verbose("Sent HTTP request to cf-deployment-tracker-service...")
+      Log.verbose("Sent HTTP request to metrics-tracker-service...")
     } else {
       Log.verbose("Failed to build valid JSON payload for deployment tracker... maybe running locally and not on the cloud?")
     }
@@ -89,12 +94,21 @@ public struct CloudFoundryDeploymentTracker {
   /// - returns: JSON, assuming we have access to application info
   public func buildTrackerJson(configMgr: ConfigurationManager) -> [String:Any]? {
     var jsonEvent: [String:Any] = [:]
-    guard let vcapApplication = configMgr.getApp() else {
-      Log.verbose("Couldn't get Cloud Foundry App instance... maybe running locally and not on the cloud?")
-      return nil
+    var org = "IBM"
+    if let organization = self.organization {
+      org = organization
     }
-
-    Log.verbose("Preparing dictionary payload for cf-deployment-tracker-service...")
+    //Get the yaml file in the master's top level directory using the organization and repository name.
+    let urlString = "https://raw.githubusercontent.com/" + org + "/" + repository + "/master/repository.yaml"
+    let repoString = "https://github.com/" + org + "/" + repository
+    var yaml = ""
+    KituraRequest.request(.get, urlString).response {
+      request, response, data, error in
+        if let data = data, let utf8Text = String(data: data, encoding: .utf8) {
+        yaml = utf8Text
+        }
+      }
+    Log.verbose("Preparing dictionary payload for metrics-tracker-service...")
     let dateFormatter = DateFormatter()
     #if os(OSX)
     //dateFormatter.calendar = Calendar(identifier: .iso8601)
@@ -111,8 +125,12 @@ public struct CloudFoundryDeploymentTracker {
     if let codeVersion = self.codeVersion {
       jsonEvent["code_version"] = codeVersion
     }
-    jsonEvent["repository_url"] = repositoryURL
     jsonEvent["runtime"] = "swift"
+    jsonEvent["repository_url"] = repoString
+
+    //If not deployed on Cloud Foundry, ignore all the CF environment variables.
+    if let vcapApplication = configMgr.getApp() {
+
     jsonEvent["application_name"] = vcapApplication.name
     jsonEvent["space_id"] = vcapApplication.spaceId
     jsonEvent["application_id"] = vcapApplication.id
@@ -143,8 +161,54 @@ public struct CloudFoundryDeploymentTracker {
       }
       jsonEvent["bound_vcap_services"] = serviceDictionary
     }
-    Log.verbose("Finished preparing dictionary payload for cf-deployment-tracker-service.")
-    Log.verbose("Dictionary payload for cf-deployment-tracker-service is: \(jsonEvent)")
+  }
+
+    //Convert the yaml string to Json.
+    do {
+    let journey_metric = try Yaml.load(yaml)
+    var metrics = [String: Any]()
+    if journey_metric["id"] != nil {
+      metrics["repository_id"] = journey_metric["id"].string
+    } else{
+      metrics["repository_id"] = ""
+    }
+    if journey_metric["runtimes"] != nil {
+      let target_runtimes = journey_metric["runtimes"].array
+      var target_runtime: [String] = []
+      for (runtime) in target_runtimes! {
+        target_runtime.append(runtime.string!)
+      }
+      metrics["target_runtimes"] = target_runtime
+    } else {
+      metrics["target_runtimes"] = ""
+    }
+    if journey_metric["services"] != nil {
+      let target_services = journey_metric["services"].array
+      var target_service: [String] = []
+      for (service) in target_services! {
+        target_service.append(service.string!)
+      }
+      metrics["target_services"] = target_service
+    } else {
+      metrics["target_services"] = ""
+    }
+    if journey_metric["event_id"] != nil {
+      metrics["event_id"] = journey_metric["event_id"].string
+    } else {
+      metrics["event_id"] = ""
+    }
+    if journey_metric["event_organizer"] != nil {
+      metrics["event_organizer"] = journey_metric["event_organizer"].string
+    } else {
+      metrics["event_organizer"] = ""
+    }
+    jsonEvent["config"] = metrics
+    } catch {
+      Log.info("repository.yaml not exist.")
+    }
+
+    Log.verbose("Finished preparing dictionary payload for metrics-tracker-service.")
+    Log.verbose("Dictionary payload for metrics-tracker-service is: \(jsonEvent)")
     return jsonEvent
   }
 

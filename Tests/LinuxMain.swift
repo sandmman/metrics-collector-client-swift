@@ -16,7 +16,7 @@
 
 import XCTest
 
-@testable import CloudFoundryDeploymentTrackerTests
+@testable import MetricsTrackerClientTests
 
 XCTMain([
     testCase(MainTests.allTests)
