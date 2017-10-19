@@ -145,6 +145,7 @@ public struct MetricsTrackerClient {
       var serviceDict = [String]()
       for (_, service) in services {
         if var serviceStats = serviceDictionary[service.label] as? [String: Any] {
+          Log.info("Print serviceStats: \(serviceStats)")
           if let count = serviceStats["count"] as? Int {
             serviceStats["count"] = count + 1
           }
@@ -155,6 +156,7 @@ public struct MetricsTrackerClient {
           }
           if var name = serviceStats["name"] as? [String] {
             serviceDict.append(service.name)
+            serviceStats["name"] = name
           }
           serviceDictionary[service.label] = serviceStats
         } else {
