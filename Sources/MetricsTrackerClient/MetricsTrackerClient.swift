@@ -202,6 +202,9 @@ public struct MetricsTrackerClient {
     } else {
       metrics["event_organizer"] = ""
     }
+    if journey_metric["language"] != nil {
+      jsonEvent["runtime"] = journey_metric["language"].string
+    }
     jsonEvent["config"] = metrics
     } catch {
       Log.info("repository.yaml not exist.")

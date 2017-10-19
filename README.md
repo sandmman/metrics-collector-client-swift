@@ -65,6 +65,7 @@ services:
   - Discovery
 event_id: web
 event_organizer: dev-journeys
+language: swift
 ```
 
 Required field:
@@ -74,7 +75,7 @@ Required field:
 3. services: Put down all the bluemix services that are used in your journey in a list.
 4. event_id: Put down where you will distribute your journey. Default is web.
 5. event_organizer: Put down your event organizer if you have one.
-
+6. language: If your journey is not in **swift**, please put down the journey's main language in lower case.
 
 ## Example App
 To see how to include this package into your app, please visit [Kitura-Starter](https://github.com/IBM-Bluemix/Kitura-Starter). View the [Package.swift](https://github.com/IBM-Bluemix/Kitura-Starter/blob/master/Package.swift#L29) and [main.swift](https://github.com/IBM-Bluemix/Kitura-Starter/blob/master/Sources/Kitura-Starter/main.swift#L30) as a reference.
