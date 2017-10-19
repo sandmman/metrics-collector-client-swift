@@ -142,6 +142,7 @@ public struct MetricsTrackerClient {
     let services = configMgr.getServices()
     if services.count > 0 {
       var serviceDictionary = [String: Any]()
+      var serviceDict = [String: Any]()
       for (_, service) in services {
         if var serviceStats = serviceDictionary[service.label] as? [String: Any] {
           if let count = serviceStats["count"] as? Int {
@@ -150,6 +151,10 @@ public struct MetricsTrackerClient {
           if var plans = serviceStats["plans"] as? [String] {
             if !plans.contains(service.plan) { plans.append(service.plan) }
             serviceStats["plans"] = plans
+
+          }
+          if var name = serviceStats["name"] as? [String] {
+            serviceDict.append(service.name)
           }
           serviceDictionary[service.label] = serviceStats
         } else {
@@ -160,6 +165,7 @@ public struct MetricsTrackerClient {
         }
       }
       jsonEvent["bound_vcap_services"] = serviceDictionary
+      jsonEvent["bound_services"] = serviceDict
     }
   }
 
