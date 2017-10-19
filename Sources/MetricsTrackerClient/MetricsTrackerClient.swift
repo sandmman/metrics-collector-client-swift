@@ -142,7 +142,7 @@ public struct MetricsTrackerClient {
     let services = configMgr.getServices()
     if services.count > 0 {
       var serviceDictionary = [String: Any]()
-      var serviceDict = [String: Any]()
+      var serviceDict = [String]
       for (_, service) in services {
         if var serviceStats = serviceDictionary[service.label] as? [String: Any] {
           if let count = serviceStats["count"] as? Int {
