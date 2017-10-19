@@ -46,7 +46,7 @@ public struct MetricsTrackerClient {
     if let trackerJson = buildTrackerJson(configMgr: configMgr),
     let jsonData = try? JSONSerialization.data(withJSONObject: trackerJson) {
       let jsonStr = String(data: jsonData, encoding: .utf8)
-      Log.info("JSON payload for metrics-tracker-service is: \(String(describing: jsonStr))")
+      Log.verbose("JSON payload for metrics-tracker-service is: \(String(describing: jsonStr))")
       // Build URL instance
       guard let url = URL(string: "https://metrics-tracker.mybluemix.net:443/api/v1/track") else {
         Log.info("Failed to create URL object to connect to metrics-tracker-service...")
@@ -140,12 +140,12 @@ public struct MetricsTrackerClient {
 
     Log.verbose("Verifying services bound to application...")
     let services = configMgr.getServices()
+    Log.info("Print serviceStats: \(services)")
     if services.count > 0 {
       var serviceDictionary = [String: Any]()
       var serviceDict = [String]()
       for (_, service) in services {
         if var serviceStats = serviceDictionary[service.label] as? [String: Any] {
-          Log.info("Print serviceStats: \(serviceStats)")
           if let count = serviceStats["count"] as? Int {
             serviceStats["count"] = count + 1
           }
@@ -154,7 +154,7 @@ public struct MetricsTrackerClient {
             serviceStats["plans"] = plans
 
           }
-          if var name = serviceStats["name"] as? [String] {
+          if let name = serviceStats["name"] as? [String] {
             serviceDict.append(service.name)
             serviceStats["name"] = name
           }
