@@ -152,10 +152,8 @@ public struct MetricsTrackerClient {
           if var plans = serviceStats["plans"] as? [String] {
             if !plans.contains(service.plan) { plans.append(service.plan) }
             serviceStats["plans"] = plans
-          }
-          do{
             serviceDict.append(service.name)
-          }catch{}
+          }
           serviceDictionary[service.label] = serviceStats
         } else {
           var newService = [String: Any]()
