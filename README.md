@@ -58,7 +58,7 @@ The above code should be used within the main entry point of your Swift applicat
 The repository.yaml need to be written in Yaml format. Also, please put all your keys in lower case.
 
 ```yaml
-id: watson-discovery-news
+id: BluePic
 runtimes: 
   - Cloud Foundry
 services: 
@@ -70,7 +70,8 @@ language: swift
 
 Required field:
 
-1. id: Put your journey name/Github URL of your journey.
+1. id: Put your journey name/Github URL of your journey/pattern.
+	- Note: Please put down the Github URL if your journey/pattern is not from IBM organization.
 2. runtimes: Put down all your platform runtime environments in a list.
 3. services: Put down all the bluemix services that are used in your journey in a list.
 4. event_id: Put down where you will distribute your journey. Default is web.
@@ -91,7 +92,7 @@ This Swift application includes code to track deployments to [IBM Bluemix](https
 * Space ID (`space_id`)
 * Application Version (`application_version`)
 * Application URIs (`application_uris`)
-* Labels of bound services
+* Labels and names of bound services
 * Number of instances for each bound service and associated plan information
 * Metadata in the repository.yaml file
 
