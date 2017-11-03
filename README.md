@@ -58,23 +58,25 @@ The above code should be used within the main entry point of your Swift applicat
 The repository.yaml need to be written in Yaml format. Also, please put all your keys in lower case.
 
 ```yaml
-id: watson-discovery-news
+id: BluePic
 runtimes: 
   - Cloud Foundry
 services: 
   - Discovery
 event_id: web
 event_organizer: dev-journeys
+language: swift
 ```
 
 Required field:
 
-1. id: Put your journey name/Github URL of your journey.
+1. id: Put your journey name/Github URL of your journey/pattern.
+	- Note: Please put down the Github URL if your journey/pattern is not from IBM organization.
 2. runtimes: Put down all your platform runtime environments in a list.
 3. services: Put down all the bluemix services that are used in your journey in a list.
 4. event_id: Put down where you will distribute your journey. Default is web.
 5. event_organizer: Put down your event organizer if you have one.
-
+6. language: If your journey is not in **swift**, please put down the journey's main language in lower case.
 
 ## Example App
 To see how to include this package into your app, please visit [Kitura-Starter](https://github.com/IBM-Bluemix/Kitura-Starter). View the [Package.swift](https://github.com/IBM-Bluemix/Kitura-Starter/blob/master/Package.swift#L29) and [main.swift](https://github.com/IBM-Bluemix/Kitura-Starter/blob/master/Sources/Kitura-Starter/main.swift#L30) as a reference.
@@ -90,7 +92,7 @@ This Swift application includes code to track deployments to [IBM Bluemix](https
 * Space ID (`space_id`)
 * Application Version (`application_version`)
 * Application URIs (`application_uris`)
-* Labels of bound services
+* Labels and names of bound services
 * Number of instances for each bound service and associated plan information
 * Metadata in the repository.yaml file
 
