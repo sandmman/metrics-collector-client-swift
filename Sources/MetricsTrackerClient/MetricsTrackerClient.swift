@@ -46,7 +46,7 @@ public struct MetricsTrackerClient {
     if let trackerJson = buildTrackerJson(configMgr: configMgr),
     let jsonData = try? JSONSerialization.data(withJSONObject: trackerJson) {
       let jsonStr = String(data: jsonData, encoding: .utf8)
-      Log.info("JSON payload for metrics-tracker-service is: \(String(describing: jsonStr))")
+      Log.verbose("JSON payload for metrics-tracker-service is: \(String(describing: jsonStr))")
       // Build URL instance
       guard let url = URL(string: "https://metrics-tracker.mybluemix.net:443/api/v1/track") else {
         Log.info("Failed to create URL object to connect to metrics-tracker-service...")
