@@ -8,8 +8,8 @@ The MetricsTrackerClient for Swift is a package used to track number of deployme
 
 ![Deployment badge example](badge.png "Deployment Badge")
 
-## Swift version
-- The Swift version must be 3.0 or above.
+## Swift version support
+- This client only supports Swift 3.0 or above.
 
 You can download different versions of the Swift binaries by following this [link](https://swift.org/download/).
 
@@ -73,18 +73,18 @@ Required field:
 1. id: Put your journey name/Github URL of your journey/pattern.
 	- Note: Please put down the Github URL if your journey/pattern is not from IBM organization.
 2. runtimes: Put down all your platform runtime environments in a list.
-3. services: Put down all the bluemix services that are used in your journey in a list.
+3. services: Put down all the IBM Cloud services that are used in your journey in a list.
 4. event_id: Put down where you will distribute your journey. Default is web.
 5. event_organizer: Put down your event organizer if you have one.
 6. language: If your journey is not in **swift**, please put down the journey's main language in lower case.
 
 ## Example App
-To see how to include this package into your app, please visit [Kitura-Starter](https://github.com/IBM-Bluemix/Kitura-Starter). View the [Package.swift](https://github.com/IBM-Bluemix/Kitura-Starter/blob/master/Package.swift#L29) and [main.swift](https://github.com/IBM-Bluemix/Kitura-Starter/blob/master/Sources/Kitura-Starter/main.swift#L30) as a reference.
+To see how to include this package into your app, please visit [BluePic](https://github.com/IBM/BluePic). View the [Package.swift](https://github.com/IBM/BluePic/blob/master/BluePic-Server/Package.swift#L35) and [main.swift](https://github.com/IBM/BluePic/blob/master/BluePic-Server/Sources/BluePicServer/main.swift#L29) as a reference.
 
 ## Privacy Notice
 ```
 ## Privacy Notice
-This Swift application includes code to track deployments to [IBM Bluemix](https://www.bluemix.net/) and other Cloud Foundry platforms. The following information is sent to a [Deployment Tracker](https://github.com/IBM-Bluemix/cf-deployment-tracker-service) service on each deployment:
+This Swift application includes code to track deployments to [IBM Cloud](https://www.bluemix.net/) and other Cloud Foundry platforms. The following information is sent to a [Deployment Tracker](https://github.com/IBM-Bluemix/cf-deployment-tracker-service) service on each deployment:
 
 * Swift project code version (if provided)
 * Swift project repository URL
@@ -96,7 +96,7 @@ This Swift application includes code to track deployments to [IBM Bluemix](https
 * Number of instances for each bound service and associated plan information
 * Metadata in the repository.yaml file
 
-This data is collected from the parameters of the `MetricsTrackerClient`, the `VCAP_APPLICATION` and `VCAP_SERVICES` environment variables in IBM Bluemix and other Cloud Foundry platforms. This data is used by IBM to track metrics around deployments of sample applications to IBM Bluemix to measure the usefulness of our examples, so that we can continuously improve the content we offer to you. Only deployments of sample applications that include code to ping the Deployment Tracker service will be tracked.
+This data is collected from the parameters of the `MetricsTrackerClient`, the `VCAP_APPLICATION` and `VCAP_SERVICES` environment variables in IBM Cloud and other Cloud Foundry platforms. This data is used by IBM to track metrics around deployments of sample applications to IBM Cloud to measure the usefulness of our examples, so that we can continuously improve the content we offer to you. Only deployments of sample applications that include code to ping the Deployment Tracker service will be tracked.
 
 ### Disabling Deployment Tracking
 Please see the README for the sample application that includes this package for instructions on disabling deployment tracking, as the instructions may vary based on the sample application in which this package is included.
