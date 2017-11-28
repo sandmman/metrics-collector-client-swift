@@ -20,6 +20,7 @@ import CloudFoundryEnv
 import LoggerAPI
 import Yaml
 import SwiftyRequest
+import Dispatch
 
 public struct MetricsTrackerClient {
   let configMgr: ConfigurationManager
@@ -49,16 +50,16 @@ public struct MetricsTrackerClient {
       Log.verbose("Failed to build valid JSON payload for deployment tracker... maybe running locally and not on the cloud?")
       return
     }
-    
+
     let jsonStr = String(data: jsonData, encoding: .utf8)
     Log.verbose("JSON payload for metrics-tracker-service is: \(String(describing: jsonStr))")
-      
+
     // Build Request Instance
 
     let request = RestRequest(method: .post, url: "https://metrics-tracker.mybluemix.net:443/api/v1/track")
     request.contentType = "application/json; charset=utf-8"
     request.messageBody = jsonData
-    
+
     request.responseData { response in
       switch response.result {
       case .success(let data):
@@ -66,7 +67,7 @@ public struct MetricsTrackerClient {
           Log.error("Bad JSON payload received from metrics-tracker-service.")
           return
         }
-  
+
         Log.info("metrics-tracker-service response: \(jsonResponse)")
 
       case .failure(let err):
@@ -103,7 +104,7 @@ public struct MetricsTrackerClient {
     }
 
     semaphore.wait()
-  
+
     Log.verbose("Preparing dictionary payload for metrics-tracker-service...")
     let dateFormatter = DateFormatter()
     #if os(OSX)
