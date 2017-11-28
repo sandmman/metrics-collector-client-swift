@@ -27,15 +27,15 @@ let package = Package(
       )
     ],
     dependencies: [
-      .package(url: "https://github.com/IBM-Swift/Swift-cfenv.git", .upToNextMajor(from: "4.0.0")),
+      .package(url: "https://github.com/IBM-Swift/Swift-cfenv.git", .upToNextMajor(from: "6.0.0")),
       .package(url: "https://github.com/IBM-Swift/LoggerAPI.git", .upToNextMajor(from: "1.0.0")),
       .package(url: "https://github.com/behrang/YamlSwift.git", .upToNextMajor(from: "3.0.0")),
-      .package(url: "https://github.com/IBM-Swift/Kitura-Request.git", .upToNextMajor(from: "0.0.0"))
+      .package(url: "https://github.com/IBM-Swift/SwiftyRequest.git", .upToNextMajor(from: "1.0.0"))
     ],
     targets: [
       .target(
         name: "MetricsTrackerClient",
-        dependencies: ["CloudFoundryEnv", "LoggerAPI", "Yaml", "KituraRequest"]
+        dependencies: ["CloudFoundryEnv", "LoggerAPI", "Yaml", "SwiftyRequest"]
       ),
       .testTarget(
         name: "MetricsTrackerClientTests",

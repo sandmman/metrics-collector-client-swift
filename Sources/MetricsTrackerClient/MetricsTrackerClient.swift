@@ -19,7 +19,7 @@ import Configuration
 import CloudFoundryEnv
 import LoggerAPI
 import Yaml
-import KituraRequest
+import SwiftyRequest
 
 public struct MetricsTrackerClient {
   let configMgr: ConfigurationManager
@@ -43,48 +43,37 @@ public struct MetricsTrackerClient {
   /// Sends off HTTP post request to tracking service, simply logging errors on failure
   public func track() {
     Log.verbose("About to construct HTTP request for metrics-tracker-service...")
-    if let trackerJson = buildTrackerJson(configMgr: configMgr),
-    let jsonData = try? JSONSerialization.data(withJSONObject: trackerJson) {
-      let jsonStr = String(data: jsonData, encoding: .utf8)
-      Log.verbose("JSON payload for metrics-tracker-service is: \(String(describing: jsonStr))")
-      // Build URL instance
-      guard let url = URL(string: "https://metrics-tracker.mybluemix.net:443/api/v1/track") else {
-        Log.info("Failed to create URL object to connect to metrics-tracker-service...")
-        return
-      }
-      var request = URLRequest(url: url)
-      request.httpMethod = "POST"
-      request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-      request.httpBody = jsonData
 
-      // Build task for request
-      let requestTask = URLSession(configuration: .default).dataTask(with: request) {
-        data, response, error in
+    guard let trackerJson = buildTrackerJson(configMgr: configMgr),
+          let jsonData = try? JSONSerialization.data(withJSONObject: trackerJson) else {
+      Log.verbose("Failed to build valid JSON payload for deployment tracker... maybe running locally and not on the cloud?")
+      return
+    }
+    
+    let jsonStr = String(data: jsonData, encoding: .utf8)
+    Log.verbose("JSON payload for metrics-tracker-service is: \(String(describing: jsonStr))")
+      
+    // Build Request Instance
 
-        guard let httpResponse = response as? HTTPURLResponse else {
-          Log.error("Failed to send tracking data to metrics-tracker-service: \(String(describing: error))")
+    let request = RestRequest(method: .post, url: "https://metrics-tracker.mybluemix.net:443/api/v1/track")
+    request.contentType = "application/json; charset=utf-8"
+    request.messageBody = jsonData
+    
+    request.responseData { response in
+      switch response.result {
+      case .success(let data):
+        guard let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) else {
+          Log.error("Bad JSON payload received from metrics-tracker-service.")
           return
         }
+  
+        Log.info("metrics-tracker-service response: \(jsonResponse)")
 
-        Log.info("HTTP response code: \(httpResponse.statusCode)")
-        // OK = 200, CREATED = 201
-        if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
-          if let data = data, let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) {
-             Log.info("metrics-tracker-service response: \(jsonResponse)")
-
-          } else {
-            Log.error("Bad JSON payload received from metrics-tracker-service.")
-          }
-        } else {
-          Log.error("Failed to send tracking data to metrics-tracker-service.")
-        }
+      case .failure(let err):
+          Log.error("Sending tracking data to metrics-tracker-service failed with error: \(err).")
       }
-      Log.verbose("Successfully built HTTP request options for metrics-tracker-service.")
-      requestTask.resume()
-      Log.verbose("Sent HTTP request to metrics-tracker-service...")
-    } else {
-      Log.verbose("Failed to build valid JSON payload for deployment tracker... maybe running locally and not on the cloud?")
     }
+    Log.verbose("Sent HTTP request to metrics-tracker-service...")
   }
 
   /// Helper method to build Json in a valid format for tracking service
@@ -94,20 +83,27 @@ public struct MetricsTrackerClient {
   /// - returns: JSON, assuming we have access to application info
   public func buildTrackerJson(configMgr: ConfigurationManager) -> [String:Any]? {
     var jsonEvent: [String:Any] = [:]
-    var org = "IBM"
-    if let organization = self.organization {
-      org = organization
-    }
+    let org = self.organization ?? "IBM"
+
     //Get the yaml file in the master's top level directory using the organization and repository name.
     let urlString = "https://raw.githubusercontent.com/" + org + "/" + repository + "/master/repository.yaml"
     let repoString = "https://github.com/" + org + "/" + repository
     var yaml = ""
-    KituraRequest.request(.get, urlString).response {
-      request, response, data, error in
-        if let data = data, let utf8Text = String(data: data, encoding: .utf8) {
-        yaml = utf8Text
-        }
+
+    let semaphore = DispatchSemaphore(value: 0)
+
+    RestRequest(url: urlString).responseData { response in
+      switch response.result {
+      case .success(let data):
+          yaml = String(data: data, encoding: .utf8) ?? ""
+      case .failure(let err):
+        Log.error("Failed to retrieve yaml file with error: \(err)")
       }
+      semaphore.signal()
+    }
+
+    semaphore.wait()
+  
     Log.verbose("Preparing dictionary payload for metrics-tracker-service...")
     let dateFormatter = DateFormatter()
     #if os(OSX)
@@ -219,5 +215,4 @@ public struct MetricsTrackerClient {
     Log.verbose("Dictionary payload for metrics-tracker-service is: \(jsonEvent)")
     return jsonEvent
   }
-
 }

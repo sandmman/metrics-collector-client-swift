@@ -28,6 +28,6 @@ let package = Package(
       .Package(url: "https://github.com/IBM-Swift/Swift-cfenv.git", majorVersion: 4),
       .Package(url: "https://github.com/IBM-Swift/LoggerAPI.git", majorVersion: 1),
       .Package(url: "https://github.com/behrang/YamlSwift.git", majorVersion: 3),
-      .Package(url: "https://github.com/IBM-Swift/Kitura-Request.git", majorVersion: 0)
+      .Package(url: "https://github.com/IBM-Swift/SwiftyRequest.git", majorVersion: 0)
     ]
 )
